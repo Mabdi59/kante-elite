@@ -82,7 +82,7 @@ export default function TournamentDetailClient({ id }: { id: number }) {
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { label: 'Dates', value: `${formatDate(tournament.startDate)} – ${formatDate(tournament.endDate)}` },
+            { label: 'Dates', value: `${formatDate(tournament.startDate)} - ${formatDate(tournament.endDate)}` },
             { label: 'Location', value: tournament.location },
             { label: 'Teams', value: `${tournament.registeredTeams}/${tournament.maxTeams}` },
             {

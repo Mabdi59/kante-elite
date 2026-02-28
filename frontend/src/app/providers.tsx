@@ -12,6 +12,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // NOTE: JWT is stored in localStorage for simplicity. This is acceptable when combined
+    // with a strict Content Security Policy (CSP) to mitigate XSS risk. For higher-security
+    // deployments, replace with httpOnly cookies via a Next.js API route proxy.
     const token = localStorage.getItem('token')
     if (!token) {
       setIsLoading(false)

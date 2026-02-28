@@ -1,3 +1,4 @@
+# ─── Java / Maven ─────────────────────────────────────────────────────────────
 # Compiled class file
 *.class
 
@@ -19,8 +20,26 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# virtual machine crash logs
 hs_err_pid*
 replay_pid*
-frontend/.next/\nfrontend/node_modules/
+
+# Maven build output
+backend/target/
+
+# ─── Node / Next.js ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
 frontend/tsconfig.tsbuildinfo

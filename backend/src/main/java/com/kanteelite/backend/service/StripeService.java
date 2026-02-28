@@ -20,7 +20,7 @@ public class StripeService {
      */
     public String createPaymentIntent(long amountCents, String currency, String description) {
         if (stripeSecretKey == null || stripeSecretKey.isBlank()) {
-            return "mock_client_secret_" + System.currentTimeMillis();
+            return "dev_mock_client_secret_" + java.util.UUID.randomUUID();
         }
 
         try {
