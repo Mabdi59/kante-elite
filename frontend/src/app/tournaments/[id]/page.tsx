@@ -3,6 +3,7 @@ import TournamentDetailClient from './TournamentDetailClient'
 
 export const metadata: Metadata = { title: 'Tournament Detail' }
 
-export default function TournamentDetailPage({ params }: { params: { id: string } }) {
-  return <TournamentDetailClient id={Number(params.id)} />
+export default async function TournamentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <TournamentDetailClient id={Number(id)} />
 }
