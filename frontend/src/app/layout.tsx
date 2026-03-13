@@ -1,17 +1,9 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Poppins } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
-})
 
 export const metadata: Metadata = {
   title: {
@@ -115,7 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })}
         </Script>
       </head>
-      <body className={`${poppins.variable} font-sans`}>
+      <body className="font-sans antialiased">
         <Providers>
           <Navbar />
           <main>{children}</main>
