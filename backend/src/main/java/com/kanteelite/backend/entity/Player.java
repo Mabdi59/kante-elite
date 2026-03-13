@@ -23,6 +23,9 @@ public class Player {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "nickname")
+    private String nickname;
+
     private Integer age;
 
     private String position;

@@ -38,11 +38,17 @@ public class WebhookController {
 
         Event event;
 
-        if (webhookSecret != null && !webhookSecret.isBlank() && sigHeader != null) {
+        boolean signatureVerificationEnabled = webhookSecret != null && !webhookSecret.isBlank();
+        if (signatureVerificationEnabled) {
+            if (sigHeader == null || sigHeader.isBlank()) {
+                return ResponseEntity.badRequest().body("Missing Stripe-Signature header");
+            }
             try {
                 event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
             } catch (SignatureVerificationException e) {
                 return ResponseEntity.badRequest().body("Invalid signature");
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("Invalid payload");
             }
         } else {
             // Dev mode: parse without verification
@@ -53,24 +59,36 @@ public class WebhookController {
             }
         }
 
+        if (event == null || event.getType() == null) {
+            return ResponseEntity.badRequest().body("Invalid event payload");
+        }
+
+        if (event.getDataObjectDeserializer() == null) {
+            return ResponseEntity.ok("Ignored event: missing data object");
+        }
+
         Optional<StripeObject> stripeObjectOptional = event.getDataObjectDeserializer().getObject();
 
         switch (event.getType()) {
             case "payment_intent.succeeded" -> {
-                stripeObjectOptional.ifPresent(obj -> {
-                    PaymentIntent intent = (PaymentIntent) obj;
-                    String intentId = intent.getId();
-                    updateBookingPaymentStatus(intentId, "PAID", "CONFIRMED");
-                    updateRegistrationPaymentStatus(intentId, "PAID", "CONFIRMED");
-                });
+                stripeObjectOptional
+                        .filter(PaymentIntent.class::isInstance)
+                        .map(PaymentIntent.class::cast)
+                        .ifPresent(intent -> {
+                            String intentId = intent.getId();
+                            updateBookingPaymentStatus(intentId, "PAID", "CONFIRMED");
+                            updateRegistrationPaymentStatus(intentId, "PAID", "CONFIRMED");
+                        });
             }
             case "payment_intent.payment_failed" -> {
-                stripeObjectOptional.ifPresent(obj -> {
-                    PaymentIntent intent = (PaymentIntent) obj;
-                    String intentId = intent.getId();
-                    updateBookingPaymentStatus(intentId, "FAILED", "FAILED");
-                    updateRegistrationPaymentStatus(intentId, "FAILED", "FAILED");
-                });
+                stripeObjectOptional
+                        .filter(PaymentIntent.class::isInstance)
+                        .map(PaymentIntent.class::cast)
+                        .ifPresent(intent -> {
+                            String intentId = intent.getId();
+                            updateBookingPaymentStatus(intentId, "FAILED", "FAILED");
+                            updateRegistrationPaymentStatus(intentId, "FAILED", "FAILED");
+                        });
             }
             default -> { /* Unhandled event type */ }
         }
@@ -80,6 +98,11 @@ public class WebhookController {
 
     private void updateBookingPaymentStatus(String intentId, String paymentStatus, String status) {
         bookingRepository.findByStripePaymentIntentId(intentId).ifPresent(booking -> {
+            if ("PAID".equals(paymentStatus) && "EXPIRED".equals(booking.getStatus())) {
+                booking.setPaymentStatus("PAID_AFTER_EXPIRY");
+                bookingRepository.save(booking);
+                return;
+            }
             booking.setPaymentStatus(paymentStatus);
             booking.setStatus(status);
             bookingRepository.save(booking);
@@ -88,6 +111,11 @@ public class WebhookController {
 
     private void updateRegistrationPaymentStatus(String intentId, String paymentStatus, String status) {
         registrationRepository.findByStripePaymentIntentId(intentId).ifPresent(reg -> {
+            if ("PAID".equals(paymentStatus) && "EXPIRED".equals(reg.getStatus())) {
+                reg.setPaymentStatus("PAID_AFTER_EXPIRY");
+                registrationRepository.save(reg);
+                return;
+            }
             reg.setPaymentStatus(paymentStatus);
             reg.setStatus(status);
             registrationRepository.save(reg);

@@ -3,10 +3,112 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --brand-green-900: #0f3d2f;
+    --brand-green-700: #126346;
+    --brand-yellow-400: #f8cb46;
+    --brand-navy-900: #12263a;
+    --brand-neutral-50: #f7faf8;
+    --brand-neutral-100: #eef4f1;
+    --brand-neutral-900: #10211f;
+  }
+
   html {
     scroll-behavior: smooth;
   }
+
   body {
-    @apply text-gray-900 bg-white;
+    @apply text-gray-900;
+    background-color: var(--brand-neutral-50);
+    background-image:
+      linear-gradient(0deg, rgba(18, 99, 70, 0.03), rgba(18, 99, 70, 0.03)),
+      radial-gradient(circle at 8% 12%, rgba(248, 203, 70, 0.07) 0, rgba(248, 203, 70, 0) 38%),
+      radial-gradient(circle at 92% 84%, rgba(18, 99, 70, 0.08) 0, rgba(18, 99, 70, 0) 42%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .pitch-lines {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .lift-button {
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+  }
+
+  .lift-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(16, 33, 31, 0.18);
+  }
+
+  .elevate-card {
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  }
+
+  .elevate-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 30px rgba(18, 38, 58, 0.14);
+  }
+
+  .reveal-section {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 500ms ease, transform 500ms ease;
+    will-change: opacity, transform;
+  }
+
+  .reveal-section[data-visible='true'] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section-shell {
+    @apply scroll-mt-20;
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(18, 99, 70, 0.08) 25%,
+      rgba(18, 99, 70, 0.16) 37%,
+      rgba(18, 99, 70, 0.08) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.3s ease-in-out infinite;
+  }
+
+  .mobile-safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.65rem);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .lift-button,
+  .elevate-card,
+  .reveal-section {
+    transition: none !important;
+  }
+
+  .lift-button:hover,
+  .elevate-card:hover {
+    transform: none;
+    box-shadow: none;
   }
 }

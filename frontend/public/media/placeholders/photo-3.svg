@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Kante Elite Photo Placeholder 3</title>
+  <desc id="desc">Decorative placeholder image for Kante Elite photo gallery.</desc>
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d" />
+      <stop offset="100%" stop-color="#b91c1c" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg3)" />
+  <circle cx="600" cy="250" r="180" fill="#ef4444" opacity="0.22" />
+  <circle cx="600" cy="250" r="90" fill="#fecaca" opacity="0.35" />
+  <rect x="180" y="510" width="840" height="150" rx="18" fill="#111827" opacity="0.5" />
+  <text x="600" y="585" text-anchor="middle" fill="#fee2e2" font-size="54" font-family="Arial, sans-serif" font-weight="700">
+    Kante Elite
+  </text>
+  <text x="600" y="640" text-anchor="middle" fill="#fecdd3" font-size="32" font-family="Arial, sans-serif">
+    Photo Placeholder 3
+  </text>
+</svg>

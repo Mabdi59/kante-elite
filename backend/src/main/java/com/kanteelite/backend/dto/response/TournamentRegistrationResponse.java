@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,7 +17,11 @@ public class TournamentRegistrationResponse {
     private String tournamentName;
     private Long teamId;
     private String teamName;
+    private String coachName;
+    private String contactEmail;
+    private String ageGroup;
     private String status;
     private String paymentStatus;
     private String clientSecret;
+    private LocalDateTime createdAt;
 }

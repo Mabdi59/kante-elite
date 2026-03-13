@@ -22,16 +22,20 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        String normalizedName = normalizeRequiredValue(request.getName(), "Name is required");
+        String normalizedPhone = normalizeOptionalValue(request.getPhone());
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Email already in use");
         }
 
         User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
+                .name(normalizedName)
+                .email(normalizedEmail)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role("PARENT")
-                .phone(request.getPhone())
+                .phone(normalizedPhone)
                 .build();
 
         userRepository.save(user);
@@ -46,7 +50,9 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        String normalizedEmail = normalizeEmail(request.getEmail());
+
+        User user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -74,5 +80,26 @@ public class AuthService {
                 .phone(user.getPhone())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    private String normalizeEmail(String email) {
+        String normalized = normalizeRequiredValue(email, "Email is required");
+        return normalized.toLowerCase();
+    }
+
+    private String normalizeRequiredValue(String value, String message) {
+        String normalized = normalizeOptionalValue(value);
+        if (normalized == null) {
+            throw new IllegalArgumentException(message);
+        }
+        return normalized;
+    }
+
+    private String normalizeOptionalValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

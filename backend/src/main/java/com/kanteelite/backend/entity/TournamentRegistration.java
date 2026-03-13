@@ -3,6 +3,8 @@ package com.kanteelite.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "tournament_registrations")
 @Getter
@@ -33,4 +35,15 @@ public class TournamentRegistration {
 
     @Column(name = "stripe_payment_intent_id")
     private String stripePaymentIntentId;
+
+    @Builder.Default
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

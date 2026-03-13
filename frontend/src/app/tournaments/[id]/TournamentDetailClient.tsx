@@ -4,9 +4,11 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { CheckCircle2 } from 'lucide-react'
 import { getTournament, registerForTournament } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useState } from 'react'
+import StripePaymentPanel from '@/components/StripePaymentPanel'
 
 const AGE_GROUPS = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18'] as const
 
@@ -18,8 +20,34 @@ const regSchema = z.object({
 })
 type RegFormData = z.infer<typeof regSchema>
 
+function getRegistrationErrorMessage(error: unknown): string {
+  const maybeError = error as
+    | {
+        message?: string
+        response?: {
+          data?: {
+            message?: string
+          }
+        }
+      }
+    | undefined
+  const apiMessage = maybeError?.response?.data?.message
+  if (typeof apiMessage === 'string' && apiMessage.trim()) {
+    return apiMessage
+  }
+  const genericMessage = maybeError?.message
+  if (typeof genericMessage === 'string' && genericMessage.trim()) {
+    return genericMessage
+  }
+  return 'Registration failed. Please try again.'
+}
+
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) {
+    return 'TBD'
+  }
+  return date.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -29,6 +57,7 @@ function formatDate(iso: string) {
 export default function TournamentDetailClient({ id }: { id: number }) {
   const { isAuthenticated } = useAuth()
   const [success, setSuccess] = useState(false)
+  const [paymentClientSecret, setPaymentClientSecret] = useState<string | null>(null)
 
   const { data: tournament, isLoading, isError } = useQuery({
     queryKey: ['tournament', id],
@@ -44,10 +73,16 @@ export default function TournamentDetailClient({ id }: { id: number }) {
   } = useForm<RegFormData>({ resolver: zodResolver(regSchema) })
 
   const mutation = useMutation({
-    mutationFn: (data: RegFormData) => registerForTournament(id, data),
-    onSuccess: () => {
-      setSuccess(true)
-      reset()
+    mutationFn: async (data: RegFormData) => {
+      const registration = await registerForTournament(id, data)
+      const clientSecret = registration.clientSecret?.trim()
+      if (!clientSecret) {
+        throw new Error('Payment setup failed. Please try again.')
+      }
+      return clientSecret
+    },
+    onSuccess: (clientSecret) => {
+      setPaymentClientSecret(clientSecret)
     },
   })
 
@@ -66,6 +101,8 @@ export default function TournamentDetailClient({ id }: { id: number }) {
       </div>
     )
   }
+
+  const selectableAgeGroups = tournament.ageGroups.length > 0 ? tournament.ageGroups : [...AGE_GROUPS]
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -117,10 +154,10 @@ export default function TournamentDetailClient({ id }: { id: number }) {
 
         {success && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center mb-6">
-            <div className="text-4xl mb-2">🎉</div>
-            <h3 className="text-lg font-bold text-green-800 mb-1">Registration Submitted!</h3>
+            <CheckCircle2 className="h-10 w-10 mx-auto mb-2 text-green-600" />
+            <h3 className="text-lg font-bold text-green-800 mb-1">Registration Confirmed!</h3>
             <p className="text-green-700 text-sm">
-              We&apos;ll confirm your team&apos;s spot via the email you provided.
+              Your team is registered and payment has been completed.
             </p>
           </div>
         )}
@@ -135,7 +172,20 @@ export default function TournamentDetailClient({ id }: { id: number }) {
           </div>
         )}
 
-        {!success && (
+        {!success && paymentClientSecret && (
+          <StripePaymentPanel
+            clientSecret={paymentClientSecret}
+            amountInCents={tournament.entryFeeInCents}
+            onSuccess={() => {
+              setSuccess(true)
+              setPaymentClientSecret(null)
+              mutation.reset()
+              reset()
+            }}
+          />
+        )}
+
+        {!success && !paymentClientSecret && (
           <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -180,8 +230,8 @@ export default function TournamentDetailClient({ id }: { id: number }) {
                   {...register('ageGroup')}
                   className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                 >
-                  <option value="">Select age group…</option>
-                  {AGE_GROUPS.map((ag) => (
+                  <option value="">Select age group...</option>
+                  {selectableAgeGroups.map((ag) => (
                     <option key={ag} value={ag}>
                       {ag}
                     </option>
@@ -194,7 +244,7 @@ export default function TournamentDetailClient({ id }: { id: number }) {
             </div>
 
             {mutation.isError && (
-              <p className="text-red-600 text-sm">Registration failed. Please try again.</p>
+              <p className="text-red-600 text-sm">{getRegistrationErrorMessage(mutation.error)}</p>
             )}
 
             <button
@@ -202,7 +252,7 @@ export default function TournamentDetailClient({ id }: { id: number }) {
               disabled={mutation.isPending || !isAuthenticated}
               className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-colors"
             >
-              {mutation.isPending ? 'Submitting…' : 'Register Team'}
+              {mutation.isPending ? 'Starting Payment...' : 'Continue to Payment'}
             </button>
           </form>
         )}

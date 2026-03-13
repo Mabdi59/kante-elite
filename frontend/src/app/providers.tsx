@@ -6,6 +6,7 @@ import { queryClient } from '@/lib/queryClient'
 import { AuthContext } from '@/lib/auth'
 import { getMe, login as apiLogin } from '@/lib/api'
 import type { User } from '@/lib/types'
+import { safeStorage } from '@/lib/storage'
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -15,25 +16,32 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     // NOTE: JWT is stored in localStorage for simplicity. This is acceptable when combined
     // with a strict Content Security Policy (CSP) to mitigate XSS risk. For higher-security
     // deployments, replace with httpOnly cookies via a Next.js API route proxy.
-    const token = localStorage.getItem('token')
+    const token = safeStorage.getItem('token')
     if (!token) {
       setIsLoading(false)
       return
     }
     getMe()
       .then(setUser)
-      .catch(() => localStorage.removeItem('token'))
+      .catch(() => safeStorage.removeItem('token'))
       .finally(() => setIsLoading(false))
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    const { token, user: me } = await apiLogin(email, password)
-    localStorage.setItem('token', token)
-    setUser(me)
+    const { token } = await apiLogin(email, password)
+    safeStorage.setItem('token', token)
+    try {
+      const me = await getMe()
+      setUser(me)
+    } catch (error) {
+      safeStorage.removeItem('token')
+      setUser(null)
+      throw error
+    }
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token')
+    safeStorage.removeItem('token')
     setUser(null)
   }, [])
 

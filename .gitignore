@@ -1,4 +1,4 @@
-# ─── Java / Maven ─────────────────────────────────────────────────────────────
+# Java / Maven
 # Compiled class file
 *.class
 
@@ -26,19 +26,23 @@ replay_pid*
 
 # Maven build output
 backend/target/
+.idea/
 
-# ─── Node / Next.js ───────────────────────────────────────────────────────────
+# Node / Next.js
 frontend/node_modules/
 frontend/.next/
+frontend/.next_backup*/
 frontend/out/
 frontend/.env.local
+frontend/layout-served.js
+frontend/.codex-next-start*
 
-# ─── Environment ──────────────────────────────────────────────────────────────
+# Environment
 .env
 .env.local
 .env.*.local
 
-# ─── OS ───────────────────────────────────────────────────────────────────────
+# OS
 .DS_Store
 Thumbs.db
 

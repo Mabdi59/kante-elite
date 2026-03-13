@@ -38,7 +38,8 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/sessions").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/content/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/sessions", "/api/sessions/featured").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
                         .requestMatchers("/api/webhooks/stripe").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()

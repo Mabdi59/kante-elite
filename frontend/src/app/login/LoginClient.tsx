@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Shield } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useState } from 'react'
 
@@ -39,7 +40,7 @@ export default function LoginClient() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">⚽</div>
+          <Shield className="h-10 w-10 mx-auto mb-3 text-green-700" />
           <h1 className="text-3xl font-extrabold text-gray-900">Welcome Back</h1>
           <p className="text-gray-500 mt-2">Sign in to your Kante Elite account</p>
         </div>
@@ -68,7 +69,7 @@ export default function LoginClient() {
                 type="password"
                 {...register('password')}
                 className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="••••••••"
+                placeholder="********"
                 autoComplete="current-password"
               />
               {errors.password && (
@@ -87,7 +88,7 @@ export default function LoginClient() {
               disabled={isSubmitting}
               className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors"
             >
-              {isSubmitting ? 'Signing in…' : 'Sign In'}
+              {isSubmitting ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

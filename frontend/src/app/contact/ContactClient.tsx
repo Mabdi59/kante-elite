@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { CheckCircle2, Clock3, Mail, MapPin, Phone } from 'lucide-react'
+import { useSiteContentBlock } from '@/lib/siteContent'
 
 const schema = z.object({
   name: z.string().min(2, 'Name required'),
@@ -14,6 +16,24 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
+type ContactBlockMeta = {
+  addressLine1: string
+  addressLine2: string
+  phone: string
+  email: string
+  hours: string[]
+  getInTouchHeading: string
+  addressLabel: string
+  phoneLabel: string
+  emailLabel: string
+  hoursLabel: string
+  messageSentTitle: string
+  messageSentBody: string
+  sendAnotherLabel: string
+  sendLabel: string
+  sendingLabel: string
+}
+
 export default function ContactClient() {
   const [sent, setSent] = useState(false)
   const {
@@ -22,9 +42,79 @@ export default function ContactClient() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+  const contactBlock = useSiteContentBlock<ContactBlockMeta>('contact.page', {
+    key: 'contact.page',
+    title: 'Contact Us',
+    body: "Have questions? We'd love to hear from you. Send us a message and we'll get back to you within 24 hours.",
+    metadata: {
+      addressLine1: '3500 Olentangy River Rd',
+      addressLine2: 'Columbus, OH 43214',
+      phone: '(614) 555-0100',
+      email: 'info@kanteelite.com',
+      hours: ['Mon-Fri: 3 PM - 8 PM', 'Sat: 8 AM - 6 PM', 'Sun: 10 AM - 4 PM'],
+      getInTouchHeading: 'Get in Touch',
+      addressLabel: 'Address',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      hoursLabel: 'Hours',
+      messageSentTitle: 'Message Sent!',
+      messageSentBody: "Thanks for reaching out. We'll be in touch within 24 hours.",
+      sendAnotherLabel: 'Send Another Message',
+      sendLabel: 'Send Message',
+      sendingLabel: 'Sending...',
+    },
+  })
+
+  const hours = Array.isArray(contactBlock.metadata.hours)
+    ? contactBlock.metadata.hours.filter((item): item is string => typeof item === 'string')
+    : []
+  const safeHours =
+    hours.length > 0
+      ? hours
+      : ['Mon-Fri: 3 PM - 8 PM', 'Sat: 8 AM - 6 PM', 'Sun: 10 AM - 4 PM']
+  const phone =
+    typeof contactBlock.metadata.phone === 'string'
+      ? contactBlock.metadata.phone
+      : '(614) 555-0100'
+  const email =
+    typeof contactBlock.metadata.email === 'string'
+      ? contactBlock.metadata.email
+      : 'info@kanteelite.com'
+  const getInTouchHeading =
+    typeof contactBlock.metadata.getInTouchHeading === 'string'
+      ? contactBlock.metadata.getInTouchHeading
+      : 'Get in Touch'
+  const addressLabel =
+    typeof contactBlock.metadata.addressLabel === 'string' ? contactBlock.metadata.addressLabel : 'Address'
+  const phoneLabel =
+    typeof contactBlock.metadata.phoneLabel === 'string' ? contactBlock.metadata.phoneLabel : 'Phone'
+  const emailLabel =
+    typeof contactBlock.metadata.emailLabel === 'string' ? contactBlock.metadata.emailLabel : 'Email'
+  const hoursLabel =
+    typeof contactBlock.metadata.hoursLabel === 'string' ? contactBlock.metadata.hoursLabel : 'Hours'
+  const messageSentTitle =
+    typeof contactBlock.metadata.messageSentTitle === 'string'
+      ? contactBlock.metadata.messageSentTitle
+      : 'Message Sent!'
+  const messageSentBody =
+    typeof contactBlock.metadata.messageSentBody === 'string'
+      ? contactBlock.metadata.messageSentBody
+      : "Thanks for reaching out. We'll be in touch within 24 hours."
+  const sendAnotherLabel =
+    typeof contactBlock.metadata.sendAnotherLabel === 'string'
+      ? contactBlock.metadata.sendAnotherLabel
+      : 'Send Another Message'
+  const sendLabel =
+    typeof contactBlock.metadata.sendLabel === 'string' ? contactBlock.metadata.sendLabel : 'Send Message'
+  const sendingLabel =
+    typeof contactBlock.metadata.sendingLabel === 'string'
+      ? contactBlock.metadata.sendingLabel
+      : 'Sending...'
+  const phoneHref = `tel:${phone.replace(/[^\d+]/g, '')}`
+  const emailHref = `mailto:${email}`
 
   const onSubmit = async (_data: FormData) => {
-    // Simulate submission — in production, call an API endpoint
+    // Simulate submission - in production, call an API endpoint
     await new Promise((r) => setTimeout(r, 800))
     setSent(true)
     reset()
@@ -33,10 +123,11 @@ export default function ContactClient() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Contact Us</h1>
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+          {contactBlock.title ?? 'Contact Us'}
+        </h1>
         <p className="text-gray-600 max-w-xl mx-auto">
-          Have questions? We&apos;d love to hear from you. Send us a message and we&apos;ll get back to
-          you within 24 hours.
+          {contactBlock.body}
         </p>
       </div>
 
@@ -44,44 +135,41 @@ export default function ContactClient() {
         {/* Contact Info */}
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{getInTouchHeading}</h2>
             <div className="space-y-4 text-gray-700">
               <div className="flex items-start gap-3">
-                <span className="text-2xl">📍</span>
+                <MapPin className="h-6 w-6 mt-0.5" />
                 <div>
-                  <div className="font-semibold">Address</div>
-                  <div>3500 Olentangy River Rd</div>
-                  <div>Columbus, OH 43214</div>
+                  <div className="font-semibold">{addressLabel}</div>
+                  <div>{contactBlock.metadata.addressLine1 ?? '3500 Olentangy River Rd'}</div>
+                  <div>{contactBlock.metadata.addressLine2 ?? 'Columbus, OH 43214'}</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">📞</span>
+                <Phone className="h-6 w-6 mt-0.5" />
                 <div>
-                  <div className="font-semibold">Phone</div>
-                  <a href="tel:+16145550100" className="text-green-700 hover:underline">
-                    (614) 555-0100
+                  <div className="font-semibold">{phoneLabel}</div>
+                  <a href={phoneHref} className="text-green-700 hover:underline">
+                    {phone}
                   </a>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">✉️</span>
+                <Mail className="h-6 w-6 mt-0.5" />
                 <div>
-                  <div className="font-semibold">Email</div>
-                  <a
-                    href="mailto:info@kanteelite.com"
-                    className="text-green-700 hover:underline"
-                  >
-                    info@kanteelite.com
+                  <div className="font-semibold">{emailLabel}</div>
+                  <a href={emailHref} className="text-green-700 hover:underline">
+                    {email}
                   </a>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">🕐</span>
+                <Clock3 className="h-6 w-6 mt-0.5" />
                 <div>
-                  <div className="font-semibold">Hours</div>
-                  <div>Mon–Fri: 3 PM – 8 PM</div>
-                  <div>Sat: 8 AM – 6 PM</div>
-                  <div>Sun: 10 AM – 4 PM</div>
+                  <div className="font-semibold">{hoursLabel}</div>
+                  {safeHours.map((line) => (
+                    <div key={line}>{line}</div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -92,16 +180,14 @@ export default function ContactClient() {
         <div className="bg-white rounded-2xl shadow-md p-8">
           {sent ? (
             <div className="text-center py-10">
-              <div className="text-5xl mb-4">✅</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Message Sent!</h3>
-              <p className="text-gray-600 mb-6">
-                Thanks for reaching out. We&apos;ll be in touch within 24 hours.
-              </p>
+              <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{messageSentTitle}</h3>
+              <p className="text-gray-600 mb-6">{messageSentBody}</p>
               <button
                 onClick={() => setSent(false)}
                 className="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-colors"
               >
-                Send Another Message
+                {sendAnotherLabel}
               </button>
             </div>
           ) : (
@@ -156,7 +242,7 @@ export default function ContactClient() {
                   {...register('message')}
                   rows={5}
                   className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                  placeholder="Tell us how we can help…"
+                  placeholder="Tell us how we can help..."
                 />
                 {errors.message && (
                   <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>
@@ -167,7 +253,7 @@ export default function ContactClient() {
                 disabled={isSubmitting}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors"
               >
-                {isSubmitting ? 'Sending…' : 'Send Message'}
+                {isSubmitting ? sendingLabel : sendLabel}
               </button>
             </form>
           )}

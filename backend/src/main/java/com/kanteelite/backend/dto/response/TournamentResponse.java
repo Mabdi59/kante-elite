@@ -19,5 +19,6 @@ public class TournamentResponse {
     private Integer registrationFeeCents;
     private String ageGroups;
     private Integer maxTeams;
+    private Integer registeredTeams;
     private String status;
 }
