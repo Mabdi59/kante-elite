@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Shield } from 'lucide-react'
+import { CheckCircle2, Shield } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useState } from 'react'
 
@@ -18,6 +18,9 @@ type FormData = z.infer<typeof schema>
 export default function LoginClient() {
   const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const registered = searchParams.get('registered') === '1'
+  const redirectTo = searchParams.get('redirect') ?? '/dashboard'
   const [apiError, setApiError] = useState<string | null>(null)
 
   const {
@@ -30,7 +33,7 @@ export default function LoginClient() {
     setApiError(null)
     try {
       await login(data.email, data.password)
-      router.push('/dashboard')
+      router.push(redirectTo.startsWith('/') ? redirectTo : '/dashboard')
     } catch {
       setApiError('Invalid email or password. Please try again.')
     }
@@ -44,6 +47,13 @@ export default function LoginClient() {
           <h1 className="text-3xl font-extrabold text-gray-900">Welcome Back</h1>
           <p className="text-gray-500 mt-2">Sign in to your Kante Elite account</p>
         </div>
+
+        {registered && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+            <span>Account created successfully! Sign in to get started.</span>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-md p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

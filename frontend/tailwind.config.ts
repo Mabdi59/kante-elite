@@ -23,7 +23,17 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-poppins)', 'Inter', 'sans-serif'],
+        sans: [
+          'Inter',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+        ],
       },
     },
   },
