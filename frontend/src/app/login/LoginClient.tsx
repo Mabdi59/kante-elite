@@ -15,12 +15,29 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
+/**
+ * Validate that a redirect target is a safe relative path (no protocol, no external host).
+ * Guards against open redirect attacks where `//evil.com` passes a naïve `startsWith('/')` check.
+ */
+function getSafeRedirect(raw: string | null): string {
+  if (!raw) return '/dashboard'
+  try {
+    // Resolve against a dummy origin – throws if the URL is structurally invalid
+    const url = new URL(raw, 'http://localhost')
+    // Only allow same-origin relative paths
+    if (url.origin !== 'http://localhost') return '/dashboard'
+    return url.pathname + url.search + url.hash
+  } catch {
+    return '/dashboard'
+  }
+}
+
 export default function LoginClient() {
   const { login } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const registered = searchParams.get('registered') === '1'
-  const redirectTo = searchParams.get('redirect') ?? '/dashboard'
+  const redirectTo = getSafeRedirect(searchParams.get('redirect'))
   const [apiError, setApiError] = useState<string | null>(null)
 
   const {
@@ -33,7 +50,7 @@ export default function LoginClient() {
     setApiError(null)
     try {
       await login(data.email, data.password)
-      router.push(redirectTo.startsWith('/') ? redirectTo : '/dashboard')
+      router.push(redirectTo)
     } catch {
       setApiError('Invalid email or password. Please try again.')
     }

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import type { UserRole } from '@/lib/types'
 
 interface ProtectedRouteProps {
@@ -28,14 +29,7 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   }, [isAuthenticated, role, isLoading, requiredRole, router, pathname])
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner fullScreen />
   }
 
   if (!isAuthenticated) return null
